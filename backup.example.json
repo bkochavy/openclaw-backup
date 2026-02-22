@@ -1,0 +1,20 @@
+{
+  "backup_dir": "~/backups/openclaw-system",
+  "memory_backup_dir": "~/backups/openclaw-memory",
+  "github_repo": "",
+  "github_user": "",
+  "telegram_bot_token_env": "TELEGRAM_BOT_TOKEN_AVA",
+  "telegram_chat_id": "",
+  "backup_schedule": "04:00",
+  "include_skills": true,
+  "include_scripts": true,
+  "include_launchd": true,
+  "include_agents": true,
+  "redact_env_values": true,
+  "critical_files": [
+    "openclaw/openclaw.json",
+    "workspace-config/AGENTS.md",
+    "workspace-config/SOUL.md",
+    "agents/main-auth-profiles.json"
+  ]
+}

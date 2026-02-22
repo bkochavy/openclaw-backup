@@ -1,0 +1,10 @@
+[Unit]
+Description=Run OpenClaw backup daily
+
+[Timer]
+OnCalendar=__ONCALENDAR__
+Persistent=true
+Unit=openclaw-backup.service
+
+[Install]
+WantedBy=timers.target

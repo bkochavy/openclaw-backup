@@ -1,0 +1,7 @@
+[Unit]
+Description=OpenClaw backup runner
+
+[Service]
+Type=oneshot
+Environment=OPENCLAW_HOME=__OPENCLAW_HOME__
+ExecStart=/bin/bash -lc '__OPENCLAW_HOME__/bin/backup-apply'

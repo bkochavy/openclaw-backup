@@ -1,0 +1,11 @@
+## v1.0.0 - 2026-02-22
+- Initial release
+- Daily backup of OpenClaw config, workspace files, skills, scripts, and launch agents
+- Private GitHub push with SHA verification
+- Retry on failure with Telegram notification
+- Separate memory-only backup (local git, never pushed)
+- Auto-discover agent directories (no hardcoded agent names)
+- Configurable include/exclude per backup category
+- macOS launchd + Linux systemd scheduling
+- Setup wizard: creates private GitHub repo automatically
+- Backup manifest written every run
