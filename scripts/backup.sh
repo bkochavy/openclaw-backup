@@ -142,6 +142,7 @@ backup_env_file "$HOME/.config/env/global.env" "$BACKUP_DIR/openclaw/global-env-
 
 # Secret sync: users can add their own secret backup step here.
 # Example: push to 1Password, AWS Secrets Manager, etc.
+# If you use Discord/iMessage, add a custom notify hook in this section.
 # See README.md for patterns.
 
 # Agent configs (auto-discovered)
@@ -271,6 +272,8 @@ if [ -f "$OPENCLAW_HOME/.env" ]; then
 fi
 TELEGRAM_BOT_TOKEN="${!TELEGRAM_BOT_TOKEN_ENV:-}"
 
+# Telegram alerts require telegram_bot_token_env + telegram_chat_id in backup.json
+# If telegram_chat_id is empty, failure is logged to /tmp/openclaw-backup.log but NO alert is sent (silent).
 notify_telegram() {
   local msg="$1"
   [ -z "$TELEGRAM_BOT_TOKEN" ] && return 0
@@ -347,6 +350,7 @@ else
   else
     RETRY_EXIT=$?
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] backup: push FAILED after retry (exit $RETRY_EXIT)" >> /tmp/openclaw-backup.log
+    # If telegram_chat_id is not configured, this call is a no-op and the failure stays log-only.
     notify_telegram "⚠️ *Daily backup failed* after 1 retry.
 Date: $TIMESTAMP
 Exit: $RETRY_EXIT

@@ -50,7 +50,12 @@ description: "Manage OpenClaw config backups. Use when: user wants to check back
   rsync -a ~/backups/openclaw-system/workspace-config/ ~/.openclaw/workspace/
   ```
 
-## Compare Config N Days Ago
+## Compare Config Changes
+
+```bash
+git -C ~/backups/openclaw-system diff HEAD~1 -- workspace-config/AGENTS.md
+git -C ~/backups/openclaw-system diff HEAD~1 -- workspace-config/SOUL.md
+```
 
 ```bash
 git -C ~/backups/openclaw-system diff HEAD~7 -- workspace-config/SOUL.md

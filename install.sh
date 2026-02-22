@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OPENCLAW_HOME="${OPENCLAW_HOME:-$HOME/.openclaw}"
 BIN_DIR="$OPENCLAW_HOME/bin"
 CONFIG_FILE="$OPENCLAW_HOME/backup.json"
+TMP_REPO=""
 
 SETUP_MODE=0
 QUIET_MODE=0
@@ -96,6 +97,25 @@ PY
 
 gh_authenticated() {
   command -v gh >/dev/null 2>&1 && gh auth status -h github.com >/dev/null 2>&1
+}
+
+fetch_if_needed() {
+  if [ -f "$SCRIPT_DIR/scripts/backup.sh" ]; then
+    return 0
+  fi
+
+  require_cmd curl
+  require_cmd tar
+
+  TMP_REPO="$(mktemp -d)"
+  trap 'rm -rf "$TMP_REPO"' EXIT
+  curl -fsSL "https://codeload.github.com/bkochavy/openclaw-backup/tar.gz/main" | tar -xz -C "$TMP_REPO"
+  SCRIPT_DIR="$(find "$TMP_REPO" -mindepth 1 -maxdepth 1 -type d | head -1)"
+
+  if [ ! -f "$SCRIPT_DIR/scripts/backup.sh" ]; then
+    echo "Failed to fetch openclaw-backup scripts." >&2
+    exit 1
+  fi
 }
 
 write_config() {
@@ -434,6 +454,7 @@ main() {
     exit $?
   fi
 
+  fetch_if_needed
   install_scripts
 
   if [ "$SETUP_MODE" -eq 1 ] || [ ! -f "$CONFIG_FILE" ]; then

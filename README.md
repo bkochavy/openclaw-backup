@@ -1,10 +1,29 @@
 # openclaw-backup
 
+> OpenClaw updates can wipe your config. This backs it up to a private GitHub repo every night.
+
+Your `SOUL.md`, `AGENTS.md`, auth profiles, custom skills, scheduled jobs -- months of
+tuning. OpenClaw has no built-in backup. One bad update or accidental edit and it's gone.
+
+This runs daily at 4 AM, commits everything to a private GitHub repo, verifies the push
+succeeded, and alerts you via Telegram if it didn't. Memory and daily notes stay local only.
+
+Built and battle-tested backing up a production OpenClaw setup.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![OpenClaw](https://img.shields.io/badge/OpenClaw-compatible-orange)](https://openclaw.ai)
+
 Public, installable backup package for OpenClaw configuration and workspace state.
 
 ## Install
 
 ```bash
+# Option 1: one-liner (interactive setup)
+curl -fsSL https://raw.githubusercontent.com/bkochavy/openclaw-backup/main/install.sh | bash -- --setup
+
+# Option 2: clone and run
+git clone https://github.com/bkochavy/openclaw-backup.git
+cd openclaw-backup
 ./install.sh --setup
 ```
 
@@ -35,32 +54,30 @@ Check installation:
 | LaunchAgents | GitHub (private) | OpenClaw-related plist files |
 | Memory / notes | Local only | `MEMORY.md`, daily notes, session summaries |
 
-**Why memory stays local:** Your daily notes and session transcripts are private. They never leave the machine. Local git commits protect against local corruption.
-
 ### Restore from backup
 
-#### 1) Full restore (new machine)
-
-1. Install OpenClaw and GitHub CLI (`gh auth login`).
-2. Clone your private backup repo into `~/backups/openclaw-system`.
-3. Copy files back into `~/.openclaw`:
-   - `openclaw/openclaw.json` -> `~/.openclaw/openclaw.json`
-   - `workspace-config/*` -> `~/.openclaw/workspace/`
-   - `agents/*` -> matching paths under `~/.openclaw/agents/`
-4. Reinstall schedule with `./install.sh --check` (or rerun `./install.sh --setup`).
-
-#### 2) Restore a single file
+**Single file:**
 
 ```bash
 git -C ~/backups/openclaw-system show HEAD:workspace-config/SOUL.md > ~/.openclaw/workspace/SOUL.md
 ```
 
-#### 3) Restore to a specific date
+**Full restore (new machine):**
 
 ```bash
-git -C ~/backups/openclaw-system log --oneline --since='30 days ago'
-git -C ~/backups/openclaw-system checkout <commit_sha> -- workspace-config/AGENTS.md
+git clone https://github.com/yourname/openclaw-system-backup.git ~/backups/openclaw-system
+# Then copy files back manually or run:
+bash ~/.openclaw/workspace/projects/openclaw-backup/scripts/restore.sh  # if available
 ```
+
+**Restore to a specific date:**
+
+```bash
+git -C ~/backups/openclaw-system log --oneline  # find the commit
+git -C ~/backups/openclaw-system show <sha>:workspace-config/AGENTS.md
+```
+
+**Why memory stays local:** Your daily notes and session transcripts are private. They never leave the machine. Local git commits protect against local corruption.
 
 ## 🤖 For Agents
 
