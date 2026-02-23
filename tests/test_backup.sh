@@ -88,8 +88,7 @@ cat > "$CONFIG_FILE" <<EOF_CFG
   "critical_files": [
     "openclaw/openclaw.json",
     "workspace-config/AGENTS.md",
-    "workspace-config/SOUL.md",
-    "agents/main-auth-profiles.json"
+    "workspace-config/SOUL.md"
   ]
 }
 EOF_CFG

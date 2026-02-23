@@ -7,6 +7,11 @@ description: "Manage OpenClaw config backups. Use when: user wants to check back
 
 ## Command Reference
 
+- Install OpenClaw first (if missing):
+  ```bash
+  curl -fsSL https://openclaw.ai/install.sh | bash
+  openclaw onboard --install-daemon
+  ```
 - Check latest manifest:
   ```bash
   cat ~/backups/openclaw-system/backup-manifest.txt
@@ -25,7 +30,7 @@ description: "Manage OpenClaw config backups. Use when: user wants to check back
   ```
 - Verify installation:
   ```bash
-  ./install.sh --check
+  curl -fsSL https://raw.githubusercontent.com/bkochavy/openclaw-backup/main/install.sh | bash -- --check
   ```
 
 ## What Is Backed Up

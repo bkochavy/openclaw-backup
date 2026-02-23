@@ -9,6 +9,13 @@ Your [OpenClaw](https://openclaw.ai) setup took weeks to dial in. The personalit
 
 This backs everything up to a private GitHub repo every night, verifies the push succeeded, and alerts you via Telegram if it didn't.
 
+OpenClaw itself should be installed first:
+
+```bash
+curl -fsSL https://openclaw.ai/install.sh | bash
+openclaw onboard --install-daemon
+```
+
 ## Install
 
 ```bash
@@ -69,7 +76,7 @@ curl -fsSL https://raw.githubusercontent.com/bkochavy/openclaw-backup/main/insta
 `--quiet` uses sensible defaults with no prompts. Verify afterward:
 
 ```bash
-~/.openclaw/workspace/projects/openclaw-backup/install.sh --check
+curl -fsSL https://raw.githubusercontent.com/bkochavy/openclaw-backup/main/install.sh | bash -- --check
 ```
 
 ### Operations
@@ -97,7 +104,15 @@ git -C ~/backups/openclaw-system diff HEAD~1 -- workspace-config/AGENTS.md
 git -C ~/backups/openclaw-system diff HEAD~7 -- workspace-config/SOUL.md
 ```
 
-### Config reference
+### OpenClaw paths
+
+- Config: `~/.openclaw/openclaw.json`
+- Workspace: `~/.openclaw/workspace`
+- Agents: `~/.openclaw/agents/`
+- Skills: `~/.openclaw/workspace/skills/`
+- Gateway: `http://127.0.0.1:18789`
+
+### Backup config reference
 
 Config lives at `~/.openclaw/backup.json`:
 

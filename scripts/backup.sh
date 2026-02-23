@@ -123,7 +123,6 @@ if [ "${#CRITICAL_FILES[@]}" -eq 0 ]; then
     "openclaw/openclaw.json"
     "workspace-config/AGENTS.md"
     "workspace-config/SOUL.md"
-    "agents/main-auth-profiles.json"
   )
 fi
 
