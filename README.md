@@ -1,4 +1,6 @@
 # openclaw-backup
+![openclaw-backup](https://raw.githubusercontent.com/bkochavy/openclaw-backup/main/.github/social-preview.png)
+
 
 > OpenClaw updates can wipe your config. This backs it up to a private GitHub repo every night.
 
