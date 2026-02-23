@@ -153,3 +153,21 @@ Tokens are never hardcoded. GitHub auth is fetched at runtime via `gh auth token
 ---
 
 Built and battle-tested backing up a production [OpenClaw](https://openclaw.ai) setup. MIT licensed.
+
+## Backup health check (failure-only alerts)
+
+A separate health-check script can run daily and alert only when backup health is bad (silent on success):
+
+- checks that `backup-manifest.txt` exists and is fresh
+- checks recent `/tmp/openclaw-backup.log` for failed push/critical file errors
+- sends Telegram alert only on failure
+- deduplicates repeated alerts for the same failure state
+
+Run manually:
+
+```bash
+~/.openclaw/bin/backup-healthcheck.sh
+```
+
+Template launchd unit:
+`templates/launchd/com.openclaw.backup-healthcheck.plist.template`
