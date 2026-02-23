@@ -314,6 +314,15 @@ if [ -n "$GITHUB_USER" ] && [ -n "$GITHUB_REPO" ]; then
   fi
 fi
 
+sync_repo_with_remote() {
+  [ -z "$AUTH_REMOTE_URL" ] && return 0
+  # Keep local backup repo in lock-step with remote canonical history before creating a new snapshot commit.
+  git fetch "$AUTH_REMOTE_URL" main --quiet >/dev/null 2>&1 || return 0
+  git reset --hard FETCH_HEAD >/dev/null 2>&1 || true
+}
+
+sync_repo_with_remote
+
 push_and_verify() {
   local push_exit local_head remote_head
 
@@ -322,7 +331,10 @@ push_and_verify() {
   fi
 
   if ! git push "$AUTH_REMOTE_URL" HEAD:main --quiet >/dev/null 2>&1; then
-    return 1
+    # Fallback: use origin remote + local credential helper (more reliable under launchd/keychain)
+    if ! git push origin main --quiet >/dev/null 2>&1; then
+      return 1
+    fi
   fi
 
   # Verify: fetch remote HEAD, confirm it matches local HEAD
