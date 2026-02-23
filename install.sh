@@ -218,8 +218,12 @@ telegram_chat_id = prompt("Telegram chat ID for failure alerts?", "")
 include_skills = prompt_yes_no("Include skill files in backup?", True)
 
 if repo_name and (not github_user or not gh_auth_ok()):
-    print("Run 'gh auth login' first, then re-run install.sh --setup")
-    sys.exit(2)
+    print("GitHub push disabled for now: gh is missing or not authenticated.")
+    print("Local backups will still run. To enable push later:")
+    print("  1) install gh")
+    print("  2) run: gh auth login")
+    repo_name = ""
+    github_user = ""
 
 print("\nPreview")
 print(f"- System backup dir: {backup_dir}")
@@ -304,12 +308,15 @@ ensure_github_repo() {
   fi
 
   if ! command -v gh >/dev/null 2>&1 || ! gh_authenticated; then
-    echo "Run 'gh auth login' first, then re-run install.sh --setup" >&2
-    exit 1
+    echo "GitHub push disabled: gh is missing or not authenticated." >&2
+    echo "Local backups will continue. To enable push, install gh and run: gh auth login" >&2
+    return 0
   fi
 
   if ! gh repo view "$github_user/$github_repo" >/dev/null 2>&1; then
-    gh repo create "$github_user/$github_repo" --private --confirm >/dev/null
+    if ! gh repo create "$github_user/$github_repo" --private --confirm >/dev/null; then
+      echo "Could not create github.com/$github_user/$github_repo. Continuing in local-only mode." >&2
+    fi
   fi
 }
 
@@ -448,6 +455,10 @@ main() {
   require_cmd bash
   require_cmd git
   require_cmd python3
+
+  if ! gh_authenticated; then
+    echo "install: gh not installed/authenticated; backups will run in local-only mode until 'gh auth login' is completed." >&2
+  fi
 
   if [ "$CHECK_MODE" -eq 1 ]; then
     run_check

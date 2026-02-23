@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+fi
+export PATH="$PATH:/usr/local/bin:/usr/bin:/bin"
 # Daily system config backup -> local git + optional GitHub push
 set -euo pipefail
 shopt -s nullglob
@@ -282,6 +285,10 @@ notify_telegram() {
     -d chat_id="$TELEGRAM_CHAT_ID" -d text="$msg" -d parse_mode="Markdown" >/dev/null 2>&1 || true
 }
 
+gh_auth_ready() {
+  command -v gh >/dev/null 2>&1 && gh auth status -h github.com >/dev/null 2>&1
+}
+
 MISSING_CRITICAL=0
 for f in "${CRITICAL_FILES[@]}"; do
   if [ ! -s "$BACKUP_DIR/$f" ]; then
@@ -294,9 +301,13 @@ if [ "$MISSING_CRITICAL" -eq 1 ]; then
   notify_telegram "⚠️ *Backup warning:* one or more critical files missing or empty. Check manifest."
 fi
 
-GH_TOKEN="$(gh auth token 2>/dev/null || true)"
 AUTH_REMOTE_URL=""
 if [ -n "$GITHUB_USER" ] && [ -n "$GITHUB_REPO" ]; then
+  if ! gh_auth_ready; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] backup: gh missing or not authenticated; skipping remote push (local backup only). Run 'gh auth login' after installing gh to re-enable pushes." >> /tmp/openclaw-backup.log
+    exit 0
+  fi
+  GH_TOKEN="$(gh auth token 2>/dev/null || true)"
   if [ -n "$GH_TOKEN" ]; then
     AUTH_REMOTE_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}.git"
   else

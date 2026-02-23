@@ -27,6 +27,18 @@ cd openclaw-backup
 ./install.sh --setup
 ```
 
+## Requirements
+
+| Tool | Required for | Install |
+|------|-------------|---------|
+| `bash` | installer + backup scripts | pre-installed |
+| `curl` | one-line install + Telegram alerts | `apt install curl` |
+| `git` | local backup commit history | `apt install git` |
+| `python3` | setup wizard + config parsing | `apt install python3` |
+| `gh` (GitHub CLI) | private GitHub push (optional, local backup still works without it) | `apt install gh` then `gh auth login` |
+
+Linux VPS note: if you use user-level systemd timers, run `loginctl enable-linger <user>` so the daily timer keeps running after logout.
+
 Quick defaults:
 
 ```bash
