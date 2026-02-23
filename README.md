@@ -1,147 +1,140 @@
 # openclaw-backup
-![openclaw-backup](https://raw.githubusercontent.com/bkochavy/openclaw-backup/main/.github/social-preview.png)
-
-
-> OpenClaw updates can wipe your config. This backs it up to a private GitHub repo every night.
-
-Your `SOUL.md`, `AGENTS.md`, auth profiles, custom skills, scheduled jobs -- months of
-tuning. OpenClaw has no built-in backup. One bad update or accidental edit and it's gone.
-
-This runs daily at 4 AM, commits everything to a private GitHub repo, verifies the push
-succeeded, and alerts you via Telegram if it didn't. Memory and daily notes stay local only.
-
-Built and battle-tested backing up a production OpenClaw setup.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![OpenClaw](https://img.shields.io/badge/OpenClaw-compatible-orange)](https://openclaw.ai)
 
-Public, installable backup package for OpenClaw configuration and workspace state.
+![openclaw-backup](https://raw.githubusercontent.com/bkochavy/openclaw-backup/main/.github/social-preview.png)
+
+Your [OpenClaw](https://openclaw.ai) setup took weeks to dial in. The personality in `SOUL.md`, the delegation rules in `AGENTS.md`, auth profiles, custom skills, scheduled jobs — none of it is backed up by default. One bad update or careless edit and it's gone.
+
+This backs everything up to a private GitHub repo every night, verifies the push succeeded, and alerts you via Telegram if it didn't.
 
 ## Install
 
 ```bash
-# Option 1: one-liner (interactive setup)
 curl -fsSL https://raw.githubusercontent.com/bkochavy/openclaw-backup/main/install.sh | bash -- --setup
+```
 
-# Option 2: clone and run
+The installer walks you through setup, creates a private GitHub repo, wires up a daily schedule (launchd on macOS, systemd on Linux), and runs your first backup immediately.
+
+Or clone and run manually:
+
+```bash
 git clone https://github.com/bkochavy/openclaw-backup.git
-cd openclaw-backup
-./install.sh --setup
+cd openclaw-backup && ./install.sh --setup
 ```
 
-## Requirements
+**Requirements:** `bash`, `git`, `python3` (pre-installed on most systems), and optionally `gh` ([GitHub CLI](https://cli.github.com)) for remote push. Without `gh`, backups run locally.
 
-| Tool | Required for | Install |
-|------|-------------|---------|
-| `bash` | installer + backup scripts | pre-installed |
-| `curl` | one-line install + Telegram alerts | `apt install curl` |
-| `git` | local backup commit history | `apt install git` |
-| `python3` | setup wizard + config parsing | `apt install python3` |
-| `gh` (GitHub CLI) | private GitHub push (optional, local backup still works without it) | `apt install gh` then `gh auth login` |
+> **Linux VPS:** run `loginctl enable-linger <user>` so the systemd timer survives logout.
 
-Linux VPS note: if you use user-level systemd timers, run `loginctl enable-linger <user>` so the daily timer keeps running after logout.
+## For Humans
 
-Quick defaults:
+You spend weeks tuning your OpenClaw config. Then an update ships, something breaks, and you're rebuilding from memory. This runs at 4 AM every day — it commits a snapshot to a local git repo, pushes to a private GitHub remote, and verifies the SHA matches. If the push fails, it retries once, then sends a Telegram alert.
 
-```bash
-./install.sh --quiet
-```
+**What gets backed up:**
 
-Check installation:
+- **Config** — `openclaw.json` (secrets redacted), `.env` key names, agent auth and model profiles
+- **Workspace** — `SOUL.md`, `AGENTS.md`, `USER.md`, `TOOLS.md`, `HEARTBEAT.md`
+- **Skills & scripts** — custom skill files and automation scripts (no `node_modules`)
+- **System** — LaunchAgents/systemd units, cron jobs, identity and credential metadata
+- **Memory** — `MEMORY.md`, daily notes, session summaries stay **local only** and are never pushed
+
+**Restoring files:**
 
 ```bash
-./install.sh --check
-```
-
-## 👤 For Humans
-
-**The problem:** OpenClaw updates can corrupt your config. A bad edit to `openclaw.json` can break your whole setup. Your `SOUL.md`, auth profiles, custom skills, and scheduled jobs can disappear. OpenClaw does not back this up automatically.
-
-**What this backs up:**
-
-| Category | Where | What |
-|----------|-------|------|
-| OpenClaw config | GitHub (private) | `openclaw.json` (secrets redacted), auth profiles |
-| Workspace files | GitHub (private) | `SOUL.md`, `AGENTS.md`, `USER.md`, `TOOLS.md`, `HEARTBEAT.md` |
-| Skills | GitHub (private) | All custom skill files (no `node_modules`) |
-| Scripts | GitHub (private) | Custom automation scripts |
-| LaunchAgents | GitHub (private) | OpenClaw-related plist files |
-| Memory / notes | Local only | `MEMORY.md`, daily notes, session summaries |
-
-### Restore from backup
-
-**Single file:**
-
-```bash
+# Single file
 git -C ~/backups/openclaw-system show HEAD:workspace-config/SOUL.md > ~/.openclaw/workspace/SOUL.md
-```
 
-**Full restore (new machine):**
+# Browse history
+git -C ~/backups/openclaw-system log --oneline
 
-```bash
-git clone https://github.com/yourname/openclaw-system-backup.git ~/backups/openclaw-system
-# Then copy files back manually or run:
-bash ~/.openclaw/workspace/projects/openclaw-backup/scripts/restore.sh  # if available
-```
-
-**Restore to a specific date:**
-
-```bash
-git -C ~/backups/openclaw-system log --oneline  # find the commit
+# Restore from a specific date
 git -C ~/backups/openclaw-system show <sha>:workspace-config/AGENTS.md
+
+# Full restore on a new machine
+git clone https://github.com/yourname/openclaw-system-backup.git ~/backups/openclaw-system
 ```
 
-**Why memory stays local:** Your daily notes and session transcripts are private. They never leave the machine. Local git commits protect against local corruption.
+## For Agents
 
-## 🤖 For Agents
+Complete runbook for autonomous installation and operation. All paths assume default config.
 
-Runbook:
+### Install (non-interactive)
 
-- Check last backup:
-  ```bash
-  cat ~/backups/openclaw-system/backup-manifest.txt
-  ```
-- Verify push:
-  ```bash
-  git -C ~/backups/openclaw-system log --oneline -5
-  ```
-- Trigger manual backup:
-  ```bash
-  ~/.openclaw/bin/backup-apply
-  ```
-- Check backup log:
-  ```bash
-  cat /tmp/openclaw-backup.log
-  ```
-- Restore a file:
-  ```bash
-  git -C ~/backups/openclaw-system show HEAD:workspace-config/SOUL.md
-  ```
-- Compare to yesterday:
-  ```bash
-  git -C ~/backups/openclaw-system diff HEAD~1 -- workspace-config/AGENTS.md
-  ```
+```bash
+curl -fsSL https://raw.githubusercontent.com/bkochavy/openclaw-backup/main/install.sh | bash -- --quiet
+```
+
+`--quiet` uses sensible defaults with no prompts. Verify afterward:
+
+```bash
+~/.openclaw/workspace/projects/openclaw-backup/install.sh --check
+```
+
+### Operations
+
+```bash
+# Trigger manual backup
+~/.openclaw/bin/backup-apply
+
+# Check last backup manifest
+cat ~/backups/openclaw-system/backup-manifest.txt
+
+# Recent backup commits
+git -C ~/backups/openclaw-system log --oneline -5
+
+# Backup log (errors and push status)
+cat /tmp/openclaw-backup.log
+
+# Restore a file to its live location
+git -C ~/backups/openclaw-system show HEAD:workspace-config/SOUL.md > ~/.openclaw/workspace/SOUL.md
+
+# Diff against yesterday
+git -C ~/backups/openclaw-system diff HEAD~1 -- workspace-config/AGENTS.md
+
+# Diff against last week
+git -C ~/backups/openclaw-system diff HEAD~7 -- workspace-config/SOUL.md
+```
+
+### Config reference
+
+Config lives at `~/.openclaw/backup.json`:
+
+| Field | Default | Purpose |
+|-------|---------|---------|
+| `backup_dir` | `~/backups/openclaw-system` | Local backup destination |
+| `github_repo` | `""` | Remote repo name (created as private) |
+| `github_user` | `""` | GitHub username for push |
+| `backup_schedule` | `04:00` | Daily backup time (HH:MM) |
+| `telegram_chat_id` | `""` | Chat ID for failure alerts |
+| `include_skills` | `true` | Include custom skill files |
+| `include_scripts` | `true` | Include automation scripts |
+| `redact_env_values` | `true` | Strip values from `.env` files |
+
+### Troubleshooting
+
+If Telegram alerts fire or `backup-manifest.txt` shows `MISSING` entries:
+
+1. Read `/tmp/openclaw-backup.log` for the failure reason
+2. Check GitHub auth: `gh auth status`
+3. Run manual backup: `~/.openclaw/bin/backup-apply`
+4. Verify remote matches local:
+   ```bash
+   git -C ~/backups/openclaw-system rev-parse HEAD
+   git -C ~/backups/openclaw-system ls-remote origin HEAD
+   ```
 
 ## Secret handling
 
-The backup script never hardcodes tokens. It fetches GitHub auth at runtime with:
-
-```bash
-GH_TOKEN="$(gh auth token 2>/dev/null || true)"
-```
-
-The package intentionally does not sync secrets to third-party stores. Add your own step if needed.
-
-Patterns you can add to `scripts/backup.sh`:
-
-- 1Password item update
-- AWS Secrets Manager write
-- Vault KV sync
-
-Keep those steps private to your environment.
+Tokens are never hardcoded. GitHub auth is fetched at runtime via `gh auth token`. Env files are redacted by default. The package does not sync secrets to external stores — add your own step to `scripts/backup.sh` if you need 1Password, AWS Secrets Manager, or Vault.
 
 ## Uninstall
 
 ```bash
 ./uninstall.sh
 ```
+
+---
+
+Built and battle-tested backing up a production [OpenClaw](https://openclaw.ai) setup. MIT licensed.
